@@ -4,19 +4,23 @@
 
 import sys
 import argparse
-dictionary=open("dict.txt").read().splitlines()
+dictionary=open("hdfdict.txt").read().splitlines()
 
 def run(manual_args=None):
 	args=parse_args(manual_args)
 	output=[]
 	matches=0
 	rejects=0
-	if args.text:
+	if not args.text:
+		if not args.s:
+			print "-h for help, check readme for usage"
+	else:
 		query=args.text[0]
 		inputlen=len(query)
 		for word in dictionary:
+			wordlen=len(word)
 			match = True			
-			if (len(word) < inputlen) or (len(word) > inputlen):
+			if (wordlen < inputlen) or (wordlen > inputlen):
 				match = False
 			else:
 				pos = 0
@@ -33,19 +37,17 @@ def run(manual_args=None):
 						if get_hand(wordkey) != 'r':
 							match = False
 					if match == False:
-						if args.v or args.vr: print "'%s' FAIL ON %s"%(word,word[pos])
+						if args.vr: print "'%s' FAIL ON %s"%(word,word[pos])
 						break
 					else:
-						if args.v or args.vm: print "'%s' PASS ON %s"%(word,word[pos])
+						if args.vm: print "'%s' PASS ON %s"%(word,word[pos])
 						pos += 1
 			if match:
 				output.append(word)
-				if args.v:
-					print "'%s' ADDED"%word
+				if args.vm: print "'%s' ADDED"%word
 				matches+=1
 			else:
 				rejects+=1
-			
 		send_output(output,matches,rejects,args)
 
 def get_column(key):
@@ -72,33 +74,24 @@ def send_output(output,matches,rejects,args):
 				print word
 		elif args.f:
 			for word in output:
-				with open("output/output-{}.txt".format(query),'a') as tmp:
+				with open("output-{}.txt".format(args.text[0]),'a') as tmp:
 					tmp.write("{}\n".format(word))
-			print "OUTPUT -> output/output-%s.txt"%(query)
+			print "OUTPUT -> output/output-%s.txt"%(args.text[0])
 		else:
 			total=float(matches+rejects)
 			percent=float(matches/total)
 			print "%s MATCHES (%.4f%%)"%(matches,percent)
 
 def parse_args(args=None):
-	parser=argparse.ArgumentParser()
+	parser=argparse.ArgumentParser(description="Hand Dictionary Filter v0.2")
 	parser.add_argument('text', metavar='', nargs="*")
-	parser.add_argument('-s', action="store_true", 
-		help="silence output, but still print to file")
-	parser.add_argument('-p', action="store_true", 
-		help="instead of creating a text file, output as array")
-	parser.add_argument('-pl', action="store_true", 
-		help="instead of creating a text file, output as 1 per line")	
-	parser.add_argument('-g', action="store_true", 
-		help="generate random values instead of filtering")	
-	parser.add_argument('-f', action="store_true", 
-		help="render results to file with filter as filename (if matches found)")	
-	parser.add_argument('-v', action="store_true", 
-		help="verbose mode, show pass and fails")
-	parser.add_argument('-vr', action="store_true", 
-		help="verbose mode, show only rejects")
-	parser.add_argument('-vm', action="store_true", 
-		help="verbose mode, show only matches")	
+	parser.add_argument('-f', action="store_true", help="create list as output-query.txt in directory")	
+	parser.add_argument('-g', action="store_true", help="UNAVAILABLE generate random values instead of filtering")	
+	parser.add_argument('-p', action="store_true", help="get list as an array")
+	parser.add_argument('-pl', action="store_true", help="get list as one entry per line")	
+	parser.add_argument('-s', action="store_true", help="silence all output")
+	parser.add_argument('-vr', action="store_true", help="verbose: show failures")
+	parser.add_argument('-vm', action="store_true", help="verbose: show passes")
 	return parser.parse_args(args)
 
 run()
