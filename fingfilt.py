@@ -1,10 +1,30 @@
-# hand dictionary filter.
-# delivers a sorted list with words that match a requested query.
-# Philip Crosby, June 3 2016
+'''
+MIT License
+
+Copyright (c) 2016 Philip Crosby
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+'''
 
 import sys
 import argparse
-dictionary=open("hdfdict.txt").read().splitlines()
+dictionary=open("fingfilt_dict.txt").read().splitlines()
 
 def run(manual_args=None):
 	args=parse_args(manual_args)
@@ -26,16 +46,18 @@ def run(manual_args=None):
 				pos = 0
 				while pos < inputlen:
 					wordkey = word[pos]
-					querykey = query[pos]
+					querykey = query[pos]	
 					if querykey in {'0','1','2','3','4','5','6','7','8','9'}:
 						if get_column(wordkey) != get_column(querykey):
 							match = False
 					elif querykey == 'l':
-						if get_hand(wordkey) != 'l':
+						if get_hand(wordkey) != 'left':
 							match = False
 					elif querykey == 'r':
-						if get_hand(wordkey) != 'r':
+						if get_hand(wordkey) != 'right':
 							match = False
+					else:
+						match = False
 					if match == False:
 						if args.vr: print "'%s' FAIL ON %s"%(word,word[pos])
 						break
@@ -58,10 +80,10 @@ def get_column(key):
 
 def get_hand(key):
 	col = get_column(key)
-	if col <= 5:
-		return 'l'
-	elif col >= 6:
-		return 'r'
+	if col in {1,2,3,4,5}:
+		return 'left'
+	elif col in {6,7,8,9,0}:
+		return 'right'
 
 def send_output(output,matches,rejects,args):
 	if matches == 0:
