@@ -24,70 +24,76 @@ SOFTWARE.
 
 import sys
 import argparse
-dictionary=open("fingfilt_dict.txt").read().splitlines()
+args=[]
+output=[]
+query=""
+matches=0
+rejects=0
+dictionary=open("dict_english.txt").read().splitlines()
+
+def parse_args(args=None):
+	parser=argparse.ArgumentParser(description="Fing(er)Filt(er) v0.3")
+	parser.add_argument('text', metavar='', nargs="*")
+	parser.add_argument('-f', action="store_true", help="create list as output-query.txt in directory")	
+	parser.add_argument('-p', action="store_true", help="get list as an array")
+	parser.add_argument('-pl', action="store_true", help="get list as one entry per line")	
+	parser.add_argument('-s', action="store_true", help="silence all output")	
+	return parser.parse_args(args)
 
 def run(manual_args=None):
+	global args
 	args=parse_args(manual_args)
-	output=[]
-	matches=0
-	rejects=0
-	if not args.text:
-		if not args.s:
-			print "-h for help, check readme for usage"
-	else:
-		query=args.text[0]
-		inputlen=len(query)
-		for word in dictionary:
-			wordlen=len(word)
-			match = True			
-			if (wordlen < inputlen) or (wordlen > inputlen):
-				match = False
-			else:
-				pos = 0
-				while pos < inputlen:
-					wordkey = word[pos]
-					querykey = query[pos]	
-					if querykey in {'0','1','2','3','4','5','6','7','8','9'}:
-						if get_column(wordkey) != get_column(querykey):
-							match = False
-					elif querykey == 'l':
-						if get_hand(wordkey) != 'left':
-							match = False
-					elif querykey == 'r':
-						if get_hand(wordkey) != 'right':
-							match = False
-					else:
-						match = False
-					if match == False:
-						if args.vr: print "'%s' FAIL ON %s"%(word,word[pos])
-						break
-					else:
-						if args.vm: print "'%s' PASS ON %s"%(word,word[pos])
-						pos += 1
-			if match:
-				output.append(word)
-				if args.vm: print "'%s' ADDED"%word
-				matches+=1
-			else:
-				rejects+=1
-		send_output(output,matches,rejects,args)
+	if args.text:
+		create_output(args.text)
+		send_output()
+	
+def create_output(text):
+	global dictionary, output, matches, rejects
+	for word in dictionary:
+		match=True
+		if length_pass(len(word),len(text)):
+			pos=0
+			while pos < len(text):
+				if text[pos] == 'l':
+					if not column_pass(word[pos],'12345'):
+						match=False
+				elif text[pos] == 'r':
+					if not column_pass(word[pos],'67890'):
+						match=False
+				elif not column_pass(word[pos],text[pos]):
+					match=False
+				if match==False:
+					break
+				else:
+					pos+=1
+		else:
+			match=False
+		if match:
+			output.append(word)
+			matches+=1
+		else:
+			rejects+=1
 
-def get_column(key):
-	col={0:"0p;/",1:"1qaz",2:"2wsx",3:"3edc",4:"4rfv",5:"5tgb",6:"6yhn",7:"7ujm",8:"8ik,",9:"9ol."}
-	for pos in col:
-		if key in col[pos]:
-			return pos
+def length_pass(wordlen,querylen):
+	match=True
+	if wordlen != querylen:
+		match=False
+	return match
 
-def get_hand(key):
-	col = get_column(key)
-	if col in {1,2,3,4,5}:
-		return 'left'
-	elif col in {6,7,8,9,0}:
-		return 'right'
+def column_pass(letter,query):
+	incols=False
+	targetcolumn=get_column(letter)
+	sep = map(int, query)
+	for column in sep:
+		if targetcolumn == column:
+			incols=True
+			break
+	return incols
 
-def send_output(output,matches,rejects,args):
+def send_output():
+	global args, matches, rejects, output
 	if matches == 0:
-		print "NO MATCHES"
+		print None
 	else:
 		if args.p:
 			print output
@@ -104,16 +110,16 @@ def send_output(output,matches,rejects,args):
 			percent=float(matches/total)
 			print "%s MATCHES (%.4f%%)"%(matches,percent)
 
-def parse_args(args=None):
-	parser=argparse.ArgumentParser(description="Hand Dictionary Filter v0.2")
-	parser.add_argument('text', metavar='', nargs="*")
-	parser.add_argument('-f', action="store_true", help="create list as output-query.txt in directory")	
-	parser.add_argument('-g', action="store_true", help="UNAVAILABLE generate random values instead of filtering")	
-	parser.add_argument('-p', action="store_true", help="get list as an array")
-	parser.add_argument('-pl', action="store_true", help="get list as one entry per line")	
-	parser.add_argument('-s', action="store_true", help="silence all output")
-	parser.add_argument('-vr', action="store_true", help="verbose: show failures")
-	parser.add_argument('-vm', action="store_true", help="verbose: show passes")
-	return parser.parse_args(args)
+def get_output(query):
+	global output
+	output = []
+	create_output(query)
+	return output
+
+def get_column(key):
+	col={0:"p",1:"qaz",2:"wsx",3:"edc",4:"rfv",5:"tgb",6:"yhn",7:"ujm",8:"ik,",9:"ol"}
+	for pos in col:
+		if key in col[pos]:
+			return pos
 
 run()

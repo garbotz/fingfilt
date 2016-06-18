@@ -1,4 +1,4 @@
-### Finger Filter
+### Fing(er) Filt(er) v0.3
 fingfilt.py readme.md
 
 ##### What does it do?
@@ -6,39 +6,21 @@ Returns an alphabetical list of all words that match finger patterns, based on c
 
 ##### String queries
 `*` = any key  
-`l` = any left hand key
-`r` = any right hand key
-`1,2,3,4,5,6,7,8,9,0` = any key from column #  
-Planned: `[123][45]` any key from column groups  
+`l` = any left hand key  
+`r` = any right hand key  
+`1234567890` = any key from column #  
 
 ##### Usage Examples
 
+Find all 3-letter words that can be typed in sequence column 2, column 8, column 8. Print as list.
 ```
-> fingfilt
--h for help, check readme for usage
-```
-
-Number words matching length: 2, 1st char: left hand, 2nd char: right hand.
-```
-> fingfilt lr
-23 MATCHES (0.0002%)
-```
-
-Print results as array.
-```
-> fingfilt lr -p
-['ah', 'ai', 'am', 'an', 'ay', 'bi', 'bo', 'by', 'do', 'eh', 'el', 'em', 'en', 'go', 'pi', 'sh', 'si', 'so', 'ti', 'to', 'wo', 'xi', 'xu']
-```
-
-Words typed in sequence: column 2, column 8, column 8. Print one line per word.
-```
-> fingfilt 288 -pl
+> fingfilt 2 8 8 -pl
 ski
 ```
 
-Same, with a fourth key of any type.
+Find all 4-letter words that can be typed column 2, column 8, column 8, any.  
 ```
-> fingfilt 288* -pl
+> fingfilt 2 8 8 * -pl
 sike
 skid
 skim
@@ -48,9 +30,25 @@ skis
 skit
 ```
 
-Column 2, column 8, any left hand, any right hand. Print one line per word.
+Add multiple columns to increase filter range per position.  
 ```
-> fingfilt 28lr -pl
+> fingfilt 29 38 38 -pl
+led
+lee
+lei
+lek
+lid
+lie
+odd
+ode
+oke
+sec
+...
+```
+
+'l' and 'r' are shorthand for columns 12345 and 67890.
+```
+> fingfilt 2 8 l r -pl
 sial
 sick
 sigh
@@ -61,32 +59,17 @@ sizy
 wich
 wick
 wiry
-wish
-with
+...
 ```
 
-Output to a txt file.
+A list not working for you? Return an array.
 ```
-> fingfilt lrr -f
-OUTPUT output-lrr.txt
+> fingfilt l r -p
+['ah', 'ai', 'am', 'an', 'ay', 'bi', 'bo', 'by', 'do', 'eh', 'el', 'em', 'en', 'go', 'pi', 'sh', 'si', 'so', 'ti', 'to', 'wo', 'xi', 'xu']
 ```
 
-Uses argparse and has basic help functionality.
+Or output as a text file.
 ```
-> fingfilt.py -h
-usage: fingfilt.py [-h] [-f] [-g] [-p] [-pl] [-s] [-vr] [-vm] [[...]]
-
-Hand Dictionary Filter v0.2
-
-positional arguments:
-
-
-optional arguments:
-  -h, --help  show this help message and exit
-  -f          create list as output-query.txt in directory
-  -p          get list as an array
-  -pl         get list as one entry per line
-  -s          silence all output
-  -vr         verbose: show failures
-  -vm         verbose: show passes
+> fingfilt l r -f
+OUT: output-lr.txt
 ```
